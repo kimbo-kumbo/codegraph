@@ -1,0 +1,17 @@
+[package]
+name = "codegraph-parser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Tree-sitter parsers for CodeGraph: Go, Python, Rust"
+
+[dependencies]
+codegraph-ir = { path = "../ir" }
+tree-sitter = { workspace = true }
+tree-sitter-go = { workspace = true }
+tree-sitter-python = { workspace = true }
+tree-sitter-rust = { workspace = true }
+walkdir = "2"
+thiserror = "2"

@@ -1,0 +1,36 @@
+# CodeGraph MCP — one-command demo.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: codegraph-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  codegraph-core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    container_name: codegraph-core
+    ports:
+      - "50051:50051"
+    environment:
+      - CODEGRAPH_GRPC_ADDR=0.0.0.0:50051
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ollama-data:
+    driver: local

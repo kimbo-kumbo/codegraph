@@ -1,0 +1,36 @@
+# Binaries
+bin/
+*.exe
+
+# Go
+vendor/
+
+# Rust
+core/target/
+**/target/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+clients/python/.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Local data
+*.log
+.env
+
+# Personal notes (not part of the project)
+docs/
+*.personal.md

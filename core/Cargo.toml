@@ -1,0 +1,45 @@
+[workspace]
+resolver = "2"
+members = [
+    "ir",
+    "parser",
+    "graph",
+    "grpc",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "Apache-2.0"
+authors = ["Svyatoslav Velkov (kimbo-kumbo)"]
+repository = "https://github.com/kimbo-kumbo/codegraph"
+
+[workspace.dependencies]
+# Common
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+walkdir = "2"
+
+# Parser
+tree-sitter = "0.24"
+tree-sitter-go = "0.23"
+tree-sitter-python = "0.23"
+tree-sitter-rust = "0.23"
+
+# Graph
+petgraph = "0.6"
+
+# gRPC
+tonic = "0.12"
+prost = "0.13"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal"] }
+
+# Build
+tonic-build = "0.12"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

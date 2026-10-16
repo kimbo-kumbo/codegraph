@@ -1,0 +1,198 @@
+syntax = "proto3";
+
+package codegraph.v1;
+
+option go_package = "github.com/kimbo-kumbo/codegraph/internal/core/pb;pb";
+
+service CodeGraph {
+  rpc Index(IndexRequest) returns (IndexResponse);
+  rpc FindCallers(FindCallersRequest) returns (FindCallersResponse);
+  rpc ImpactOfChange(ImpactOfChangeRequest) returns (ImpactOfChangeResponse);
+  rpc FindDeadCode(FindDeadCodeRequest) returns (FindDeadCodeResponse);
+  rpc CheckArchitecture(CheckArchitectureRequest) returns (CheckArchitectureResponse);
+  rpc FindTypeSmells(FindTypeSmellsRequest) returns (FindTypeSmellsResponse);
+  rpc FindComplexityPatterns(FindComplexityPatternsRequest) returns (FindComplexityPatternsResponse);
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
+}
+
+enum Language {
+  LANGUAGE_UNSPECIFIED = 0;
+  LANGUAGE_GO = 1;
+  LANGUAGE_PYTHON = 2;
+  LANGUAGE_RUST = 3;
+}
+enum NodeKind {
+  NODE_KIND_UNSPECIFIED = 0;
+  NODE_KIND_FUNCTION = 1;
+  NODE_KIND_METHOD = 2;
+  NODE_KIND_TYPE = 3;
+  NODE_KIND_INTERFACE = 4;
+  NODE_KIND_PACKAGE = 5;
+  NODE_KIND_ROUTE = 6;
+  NODE_KIND_TEST = 7;
+  NODE_KIND_MAIN = 8;
+}
+
+enum EdgeKind {
+  EDGE_KIND_UNSPECIFIED = 0;
+  EDGE_KIND_CALLS = 1;
+  EDGE_KIND_IMPORTS = 2;
+  EDGE_KIND_IMPLEMENTS = 3;
+  EDGE_KIND_REFERENCES = 4;
+}
+
+message Location {
+  string file = 1;
+  uint32 line = 2;
+  uint32 column = 3;
+}
+
+message Node {
+  string id = 1;
+  NodeKind kind = 2;
+  string name = 3;
+  string qualified_name = 4;
+  string package = 5;
+  Language language = 6;
+  Location location = 7;
+  bool exported = 8;
+  uint32 fan_in = 9;
+  uint32 fan_out = 10;
+}
+
+message Edge {
+  string from_id = 1;
+  string to_id = 2;
+  EdgeKind kind = 3;
+  Location location = 4;
+}
+
+message Diagnostic {
+  enum Severity {
+    SEVERITY_UNSPECIFIED = 0;
+    SEVERITY_INFO = 1;
+    SEVERITY_WARNING = 2;
+    SEVERITY_ERROR = 3;
+  }
+  Severity severity = 1;
+  string rule_id = 2;
+  string message = 3;
+  Location location = 4;
+  string symbol = 5;
+  string suggestion = 6;
+}
+
+
+message IndexRequest {
+  string project_path = 1;
+  repeated Language languages = 2;
+  bool incremental = 3;
+}
+
+message IndexResponse {
+  uint32 files_parsed = 1;
+  uint32 nodes_created = 2;
+  uint32 edges_created = 3;
+  uint64 duration_ms = 4;
+  repeated string errors = 5;
+}
+
+
+message FindCallersRequest {
+  string symbol = 1;
+  bool transitive = 2;
+  uint32 max_depth = 3;
+}
+
+message FindCallersResponse {
+  Node symbol = 1;
+  repeated Node callers = 2;
+  uint32 total = 3;
+}
+
+
+message ImpactOfChangeRequest {
+  string symbol = 1;
+  uint32 max_depth = 2;
+  bool include_tests = 3;
+}
+
+message ImpactOfChangeResponse {
+  Node symbol = 1;
+  repeated Node affected = 2;
+  repeated string affected_packages = 3;
+  repeated Node affected_routes = 4;
+  uint32 total_functions = 5;
+  uint32 total_packages = 6;
+}
+
+message FindDeadCodeRequest {
+  bool include_exported = 1;
+  repeated Language languages = 2;
+}
+
+message FindDeadCodeResponse {
+  repeated Node dead = 1;
+  uint32 total = 2;
+}
+
+message ArchitectureRule {
+  string name = 1;
+  string description = 2;
+  string from_pattern = 3;
+  string to_pattern = 4;
+  EdgeKind edge_kind = 5;
+  bool forbid_cycles = 6;
+}
+
+message CheckArchitectureRequest {
+  repeated ArchitectureRule rules = 1;
+}
+
+message CheckArchitectureResponse {
+  repeated Diagnostic violations = 1;
+  uint32 rules_checked = 2;
+  uint32 violations_count = 3;
+}
+
+message FindTypeSmellsRequest {
+  bool only_hot_paths = 1;
+  uint32 hot_path_threshold = 2;
+}
+
+message FindTypeSmellsResponse {
+  repeated Diagnostic smells = 1;
+  uint32 total = 2;
+}
+
+
+message FindComplexityPatternsRequest {
+  uint32 min_nesting_level = 1;
+  bool include_recursion = 2;
+}
+
+message FindComplexityPatternsResponse {
+  repeated Diagnostic patterns = 1;
+  uint32 total = 2;
+}
+
+
+message GetMetricsRequest {
+  string package = 1;
+}
+
+message GetMetricsResponse {
+  repeated PackageMetrics packages = 1;
+}
+
+message PackageMetrics {
+  string package = 1;
+  Language language = 2;
+  uint32 fan_in = 3;
+  uint32 fan_out = 4;
+  double instability = 5;
+  double abstractness = 6;
+  double distance = 7;
+  uint32 nodes_count = 8;
+  uint32 edges_count = 9;
+}
